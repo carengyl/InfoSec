@@ -29,4 +29,4 @@ jobs:
         with:
           project: 'app' # Name your project
           path: '.' # Scan the current directory
-          format: 'SARIF,HTML' # Generate SARIF and HTML reports
+          format: 'HTML' # Generate SARIF and HTML reports
