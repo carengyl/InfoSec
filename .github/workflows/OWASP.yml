@@ -1,33 +1,32 @@
-name: OWASP Security Scan
+name: OWASP Dependency-Check Scan
 
 on:
   push:
-    branches: [ master, dev ]
+    branches:
+      - master
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
 
 jobs:
-  depchecktest:
+  dependency-check:
     runs-on: ubuntu-latest
-    name: depecheck_test
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Build project with Maven
-        run: mvn clean install
-      - name: Depcheck
-        uses: dependency-check/Dependency-Check_Action@main
-        id: Depcheck
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          project: 'blog-api'
-          path: '.'
-          format: 'HTML'
-          out: 'reports'
-          args: >
-            --failOnCVSS 7
-            --enableRetired
-      - name: Upload Test results
-        uses: actions/upload-artifact@master
+          python-version: '3.12' 
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r requirements.txt 
+          
+      - name: Run OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@v4 # Use the latest version
         with:
-           name: Depcheck report
-           path: ${{github.workspace}}/reports
+          project: 'app' # Name your project
+          path: '.' # Scan the current directory
+          format: 'SARIF,HTML' # Generate SARIF and HTML reports
