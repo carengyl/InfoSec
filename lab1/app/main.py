@@ -1,11 +1,10 @@
 from fastapi import FastAPI, Depends, HTTPException, status
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
-
-from auth import authenticate_user, get_current_user
 from database import engine, get_db
 from models import Base, User, Post
-from security import create_access_token, sanitize_html
+from security import get_password_hash, create_access_token, sanitize_html
+from auth import authenticate_user, get_current_user
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -31,6 +30,25 @@ class PostResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+def create_test_user(db: Session):
+    if not db.query(User).filter(User.username == "testuser").first():
+        user = User(
+            username="testuser",
+            email="test@example.com",
+            hashed_password=get_password_hash("testpassword")
+        )
+        db.add(user)
+        db.commit()
+        print("Test user created: testuser / testpassword")
+
+
+@app.on_event("startup")
+def on_startup():
+    db = next(get_db())
+    create_test_user(db)
+    db.close()
 
 
 @app.post("/auth/login")
